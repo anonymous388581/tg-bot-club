@@ -34,6 +34,7 @@ import re
 import time
 import psutil
 import asyncio
+from html import escape
 from datetime import datetime
 from functools import wraps
 from aiofiles import open as aiopen
@@ -2229,7 +2230,7 @@ async def set_anime_channel(client, message: Message):
         text = message.text[len("/addanime"):].strip()
 
         if " - " not in text:
-            return await message.reply("<blockquote><b>Usage: /addanime <anime name> - <channel username or ID></b></blockquote>")
+            return await message.reply("<blockquote><b>Usage: /addanime &lt;anime name&gt; - &lt;channel username or ID&gt;</b></blockquote>")
 
         anime_name, channel = text.split(" - ", 1)
         anime_name = anime_name.strip()
@@ -2251,20 +2252,20 @@ async def set_anime_channel(client, message: Message):
         if not possible_names:
             await db.add_anime_channel_mapping(anime_name, final_channel)
             return await message.reply(
-                f"<blockquote><b>No matching variants found for '{anime_name}'. Added the anime manually to the channel '{channel}'.</b></blockquote>"
+                f"<blockquote><b>No matching variants found for '{escape(anime_name)}'. Added the anime manually to the channel '{escape(channel)}'.</b></blockquote>"
             )
 
         for name in possible_names:
             await db.add_anime_channel_mapping(name, final_channel)
 
         await message.reply(
-            f"<blockquote><b>Set channel for '{anime_name}' to '{channel}'</b></blockquote>\n"
-            f"<blockquote><b>Mapped variants:</b> <code>{', '.join(possible_names)}</code></blockquote>"
+            f"<blockquote><b>Set channel for '{escape(anime_name)}' to '{escape(channel)}'</b></blockquote>\n"
+            f"<blockquote><b>Mapped variants:</b> <code>{escape(', '.join(possible_names))}</code></blockquote>"
         )
 
     except Exception as e:
         print(f"Error occurred while processing the /addanime command: {e}")
-        await message.reply(f"<blockquote><b>Error occurred: {e}</b></blockquote>")
+        await message.reply(f"<blockquote><b>Error occurred: {escape(str(e))}</b></blockquote>")
 
 
 @bot.on_message(filters.command("delanime") & filters.user(Var.ADMINS))
