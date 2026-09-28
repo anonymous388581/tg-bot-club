@@ -2334,7 +2334,6 @@ async def start_msg(client, message):
         await db.add_user(uid)
     except Exception:
         pass
-    temp = await sendMessage(message, "<blockquote><i>Connecting...</i></blockquote>")
     if not await is_fsubbed(uid):
         txt, btns = await get_fsubs(uid, txtargs)
 
@@ -2343,13 +2342,11 @@ async def start_msg(client, message):
         if use_force:
             try:
                 await message.reply_photo(force_photo, caption=txt, reply_markup=InlineKeyboardMarkup(btns))
-                await temp.delete()
                 return
             except Exception:
                 pass
-        return await editMessage(temp, txt, InlineKeyboardMarkup(btns))
+        return await sendMessage(message, txt, InlineKeyboardMarkup(btns))
     if len(txtargs) <= 1:
-        await temp.delete()
         btns = []
         for elem in Var.START_BUTTONS.split():
             try:
@@ -2377,7 +2374,7 @@ async def start_msg(client, message):
         arg = (await decode(txtargs[1])).split('-')
     except Exception as e:
         await rep.report(f"User : {uid} | Error : {str(e)}", "error")
-        await editMessage(temp, "<blockquote><b>Input Link Code Decode Failed !</b></blockquote>")
+        await sendMessage(message, "<blockquote><b>Input Link Code Decode Failed !</b></blockquote>")
         return
 
     def wrap_blockquote(text):
@@ -2424,7 +2421,6 @@ async def start_msg(client, message):
                     )
                 if nmsg and Var.AUTO_DEL:
                     sent_msgs.append(nmsg)
-            await temp.delete()
             if sent_msgs and Var.AUTO_DEL:
                 async def auto_del(msgs, timer):
                     await asleep(timer)
@@ -2441,7 +2437,6 @@ async def start_msg(client, message):
             return
         except Exception as e:
             await message.reply(f"Error: {e}")
-            await temp.delete()
             return
 
     if len(arg) == 2 and arg[0] == 'get':
@@ -2449,12 +2444,12 @@ async def start_msg(client, message):
             fid = int(int(arg[1]) / abs(int(Var.FILE_STORE)))
         except Exception as e:
             await rep.report(f"User : {uid} | Error : {str(e)}", "error")
-            await editMessage(temp, "<blockquote><b>Input Link Code is Invalid !</b></blockquote>")
+            await sendMessage(message, "<blockquote><b>Input Link Code is Invalid !</b></blockquote>")
             return
         try:
             msg = await client.get_messages(Var.FILE_STORE, message_ids=fid)
             if msg.empty:
-                return await editMessage(temp, "<blockquote><b>File Not Found !</b></blockquote>")
+                return await sendMessage(message, "<blockquote><b>File Not Found !</b></blockquote>")
             if msg.text:
                 text = msg.text
                 if msg.reply_markup:
@@ -2481,7 +2476,6 @@ async def start_msg(client, message):
                     message.chat.id,
                     reply_markup=msg.reply_markup if msg.reply_markup else None
                 )
-            await temp.delete()
             if Var.AUTO_DEL:
                 async def auto_del(msg, timer):
                     await asleep(timer)
@@ -2494,9 +2488,9 @@ async def start_msg(client, message):
                 bot_loop.create_task(auto_del(nmsg, Var.DEL_TIMER))
         except Exception as e:
             await rep.report(f"User : {uid} | Error : {str(e)}", "error")
-            await editMessage(temp, "<blockquote><b>File Not Found !</b></blockquote>")
+            await sendMessage(message, "<blockquote><b>File Not Found !</b></blockquote>")
     else:
-        await editMessage(temp, "<blockquote><b>Input Link is Invalid for Usage !</b></blockquote>")
+        await sendMessage(message, "<blockquote><b>Input Link is Invalid for Usage !</b></blockquote>")
     
 @bot.on_message(command('pause') & private & user(Var.ADMINS))
 async def pause_fetch(client, message):
